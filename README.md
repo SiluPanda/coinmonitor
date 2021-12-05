@@ -1,4 +1,4 @@
-# coinmontitor
+# coinmonitor
 
 ## Introduction
 

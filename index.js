@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import User from './model/user.js'
 import mongoose from 'mongoose'
 import { fetchCoinsDetails, coinsDetails, availableCoins } from './service/marketDataService.js'
+import { priceHistory, getPriceHistory } from './service/alertsService.js'
 
 dotenv.config()
 
@@ -23,6 +24,7 @@ await mongoose.connect(process.env.MONGO_URI, dbConnnectionOptions)
 })
 
 await fetchCoinsDetails()
+await getPriceHistory()
 
 
 const bot = new Bot(process.env.TELEGRAM_TOKEN)
