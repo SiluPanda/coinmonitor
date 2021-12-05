@@ -10,9 +10,10 @@ let userSchema = mongoose.Schema(
             type: Array,
             required: true
         },
-        volatilityAlterts: {
+        volatilityAltert: {
             type: Boolean,
-            required: true
+            required: true,
+            default: false
         }
     },
     {
