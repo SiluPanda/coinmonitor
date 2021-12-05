@@ -9,6 +9,10 @@ let userSchema = mongoose.Schema(
         watchlist: {
             type: Array,
             required: true
+        },
+        volatilityAlterts: {
+            type: Boolean,
+            required: true
         }
     },
     {

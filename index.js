@@ -23,8 +23,6 @@ await mongoose.connect(process.env.MONGO_URI, dbConnnectionOptions)
     process.exit(1)
 })
 
-await fetchCoinsDetails()
-await getPriceHistory()
 
 
 const bot = new Bot(process.env.TELEGRAM_TOKEN)
@@ -51,12 +49,13 @@ bot.command('start', async (ctx) => {
     })
     .catch(err => console.log(err))
 
-    await ctx.reply(`Hello ${ctx.from.first_name || ctx.from.username}`)
-    await ctx.reply('Welcome to coinmonitor. Here are the things bot can do for you!')
+    await ctx.reply(`Hi ${ctx.from.first_name || ctx.from.username}, Gday!`)
+    await ctx.reply('Welcome to coinmonitor. Here are some commands to start with')
     await ctx.reply(`/help: shows all the available commands`)
     await ctx.reply(`/watchlist: shows the coins in your watch list`)
     await ctx.reply(`/add <coin symbol>: adds a coin with specified symbol to watch list, it must be a valid coin symbol. example: /add BTC`)
     await ctx.reply(`/remove <coin symbol>: removes a coin with specified symbol from watch list, if it already exists, example /remove BTC`)
+    await ctx.reply(`To explore all the capabilities of the bot currently, just type /help.`)
 })
 
 bot.command('help', async (ctx) => {
@@ -176,7 +175,31 @@ bot.command('all', async (ctx) => {
     await ctx.reply(`Below are all coins available to monitor: \n ${all}`)
 })
 
+/**
+ * subscribe to a alert of type [volatility, ...]
+ * 
+ * /alert <type> <args> 
+ */
 
+bot.command('alert', async (ctx) => {
+    let supportedAlertTypes = ['volatility']
+
+    let chatId = ctx.msg.chat.id
+    let message = ctx.msg.text
+
+    let tokens = message.split(' ')
+    if (tokens.length < 2) {
+        await ctx.reply(`No alert type is provided, currently supported alert types are ${supportedAlertTypes}, for more info, use /help` )
+        return
+    }
+
+    let type = tokens[1]
+
+    if (type.toLowerCase() == 'volatility') {
+        
+    }
+    
+})
 
 
 bot.start()

@@ -34,7 +34,6 @@ export async function getPriceHistory() {
 
         let responseList = await Promise.all(requestPromises)
         
-        console.log(responseList)
         for (let i = 0; i < responseList.length; i++) {
             priceHistory[coinIdList[i]] = responseList[i].data
         }
@@ -48,7 +47,7 @@ export async function sendVolatilityAlerts() {
     for (let coinId in priceHistory) {
 
         let history = priceHistory.coinId.history
-        let size = history.length
+        // TODO
 
         
     }
@@ -60,20 +59,42 @@ export async function sendVolatilityAlerts() {
  * last change is significantly higher than the average, currently 
  * the thereshold is (average*3)
  * 
- * @param {Object} history past data of 1 day, 15 minutes apart
+ * @param {Array<Object>} history past data of 1 day, 15 minutes apart
  * @param {number} history.date date in epoch mili
  * @param {number} history.rate price in USD
  * @param {number} history.volume volume
+ * 
+ * @param {number} thereshold how many times we can tolorate over average change
  */
 
-export async function detectAbnormnalVolatility(history) {
-    // TODO
-}
+export async function detectAbnormnalVolatility(history, thereshold=3) {
+
+    let size = history.length
+
+    let totalChange = 0
+    let sampleSize = 0
+    for (let i = 1; i < size - 1; i++) {
+        if (history[i].rate != undefined && history[i-1] != undefined) {
+            totalChange += (Math.abs(history[i].rate - history[i-1].rate) / history[i-1].rate) * 100
+            sampleSize += 1
+        }
+    }
+    let averageChange = totalChange / sampleSize
+    let latestChange = (Math.abs(history[size - 1].rate - history[size - 2].rate) / history[size - 2].rate) * 100
+
+    if (latestChange > thereshold * averageChange) {
+        return true;
+    }
+    else {
+        return false;
+    }
+
+}   
 
 cron.schedule('0 */30 * * * *', async () => {
     getPriceHistory()
 })
 
-detectAbnormnalVolatility()
+detectAbnormnalVolatility
 
 

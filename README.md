@@ -8,3 +8,6 @@ track the market.
 
 ## Featues
 // TODO
+
+## Data Attribution:
+The bot uses live data from the amazing platform https://www.livecoinwatch.com/
