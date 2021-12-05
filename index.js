@@ -4,6 +4,7 @@ import User from './model/user.js'
 import mongoose from 'mongoose'
 import { fetchCoinsDetails, coinsDetails, availableCoins } from './service/marketDataService.js'
 import { priceHistory, getPriceHistory } from './service/alertsService.js'
+import { bot, initializeBot } from './config/bot.js'
 
 dotenv.config()
 
@@ -23,9 +24,11 @@ await mongoose.connect(process.env.MONGO_URI, dbConnnectionOptions)
     process.exit(1)
 })
 
+// setup scripts
+await fetchCoinsDetails()
+await initializeBot()
+await getPriceHistory()
 
-
-const bot = new Bot(process.env.TELEGRAM_TOKEN)
 
 /**
  * /start
