@@ -13,11 +13,11 @@ export async function fetchCoinsDetails() {
         let data = { "currency": "USD", "sort": "rank", "order": "ascending", "offset": 0, "limit": 100, "meta": true }
         let config = {
             headers: {
-                'x-api-key': 'a70143c0-e8f8-4c12-9e7b-28e3c2c0b804'
+                'x-api-key': process.env.DATA_KEY
             }
         }
 
-        let response = await axios.post('https://api.livecoinwatch.com/coins/list', data, config)
+        let response = await axios.post(process.env.DATA_URL + '/coins/list', data, config)
         for (let coin of response.data) {
             coinsDetails[coin.code] = coin
             availableCoins.add(coin.code)
