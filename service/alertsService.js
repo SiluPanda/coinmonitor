@@ -1,54 +1,19 @@
 import axios from 'axios'
 import dotenv from 'dotenv'
-import { coinsDetails, availableCoins } from './marketDataService.js'
+import { 
+    coinsDetails, 
+    availableCoins, 
+    priceHistory, 
+    getPriceHistory 
+} from './marketDataService.js'
 import cron from 'node-cron'
 import User from '../model/user.js'
+import Alert from '../model/alert.js'
 import emoji from 'node-emoji'
 import { bot } from '../config/bot.js'
 
 dotenv.config()
 
-
-export let priceHistory = {}
-
-/**
- * method to fetch data from livecoin watch history API from all monitorable coins
- * populates priceHistory global object variable
- */
-
-export async function getPriceHistory() {
-    console.log("fetching coin history...")
-    try {
-        let requestPromises = []
-
-        let dataUrl = process.env.DATA_URL + "/coins/single/history"
-        let data = {
-            "start": Date.now() - 3600 * 24 * 1000,
-            "end": Date.now(),
-            "currency": 'USD'
-        }
-        let config = {
-            headers: {
-                'x-api-key': process.env.DATA_KEY
-            }
-        }
-
-        let coinIdList = []
-        for (let coinId in coinsDetails) {
-            coinIdList.push(coinId)
-            data['code'] = coinId
-            requestPromises.push(axios.post(dataUrl, data, config))
-        }
-
-        let responseList = await Promise.all(requestPromises)
-        
-        for (let i = 0; i < responseList.length; i++) {
-            priceHistory[coinIdList[i]] = responseList[i].data
-        }
-    } catch (err) {
-        console.log(`error while fetching price history, reason: ${err}`)
-    }
-}
 
 
 /**
@@ -135,9 +100,63 @@ export async function detectAbnormnalVolatility(history, thereshold=3) {
 
 }   
 
+
+/**
+ * sends directional price alerts for the subscribed alerts
+ */
+export async function sendPriceAlerts() {
+    try {
+        for (let coinId in coinsDetails) {
+            // get alert subscriptions of type below and price above than current price
+            let subs = await Alert.find({ coinId: coinId, alertType: 'below', value: { $gte: coinsDetails[coinId].rate }}).exec()
+            let messagePromises = []
+            
+
+            for (let sub of subs) {
+                let message = `${emoji.get('relieved')} Price alert trigered
+                Name: ${coinsDetails[coinId].name}
+                Code: ${coinId},
+                Price: ${coinsDetails[coinId].rate}
+                Volume: ${coinsDetails[coinId].volume}
+                Strike Price: ${sub.value}
+                Direction: ${sub.direction}`
+
+                messagePromises.push(bot.api.sendMessage(sub.userId, message))
+            }
+
+            await Promise.all(messagePromises)
+
+            await Alert.deleteMany({ coinId: coinId, alertType: 'below', value: { $gte: coinsDetails[coinId].rate }})
+
+            // get alert for the above directional alerts
+            subs = await Alert.find({ coinId: coinId, alertType: 'above', value: { $lte: coinsDetails[coinId].rate }}).exec()
+            messagePromises = []
+
+            for (let sub of subs) {
+                let message = `${emoji.get('relieved')} Price alert trigered
+                Name: ${coinsDetails[coinId].name}
+                Code: ${coinId},
+                Price: ${coinsDetails[coinId].rate}
+                Volume: ${coinsDetails[coinId].volume}
+                Strike Price: ${sub.value}
+                Direction: ${sub.direction}`
+
+                messagePromises.push(bot.api.sendMessage(sub.userId, message))
+            }
+
+            await Promise.all(messagePromises)
+
+            await Alert.deleteMany({ coinId: coinId, alertType: 'above', value: { $lte: coinsDetails[coinId].rate }})
+        }
+    } catch (err) {
+        console.log(`error while sending price alerts, reason: ${err}`)
+    }
+}
+
 cron.schedule('0 */30 * * * *', async () => {
     await getPriceHistory()
     await sendVolatilityAlerts()
+    await sendPriceAlerts()
 })
 
 

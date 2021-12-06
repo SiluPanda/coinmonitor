@@ -2,9 +2,24 @@ import { Bot } from 'grammy'
 import dotenv from 'dotenv'
 import User from './model/user.js'
 import mongoose from 'mongoose'
-import { fetchCoinsDetails, coinsDetails, availableCoins } from './service/marketDataService.js'
-import { priceHistory, getPriceHistory, sendVolatilityAlerts } from './service/alertsService.js'
-import { bot, initializeBot } from './config/bot.js'
+import Alert from './model/alert.js'
+
+import { 
+    fetchCoinsDetails, 
+    coinsDetails, 
+    availableCoins, 
+    getPriceHistory, 
+    priceHistory 
+} from './service/marketDataService.js'
+
+import { 
+    sendPriceAlerts
+} from './service/alertsService.js'
+
+import { 
+    bot, 
+    initializeBot 
+} from './config/bot.js'
 
 dotenv.config()
 
@@ -28,7 +43,7 @@ await mongoose.connect(process.env.MONGO_URI, dbConnnectionOptions)
 await fetchCoinsDetails()
 await initializeBot()
 await getPriceHistory()
-await sendVolatilityAlerts()
+await sendPriceAlerts()
 
 
 /**
@@ -65,6 +80,7 @@ bot.command('start', async (ctx) => {
 bot.command('help', async (ctx) => {
     
     let helpMessage = `The bot can do following things
+    
     Setup & starting up
 
     => /start Welcome command, sets up user and prints welcome message
@@ -213,6 +229,33 @@ bot.command('alert', async (ctx) => {
     if (type.toLowerCase() == 'volatility') {
         await User.updateOne({ userId: chatId }, { volatilityAlert: true })
         await ctx.reply('Added alert for extreme volatility signals for your watchlist')
+    }
+
+    if (type.toLowerCase() == 'price') {
+        if (tokens.length < 5 || isNaN(tokens[4])) {
+            await ctx.reply('Coin and/or direction and/or strike price missing, a valid alert command would be something like this:')
+            await ctx.reply('/alert price BTC below 44')
+            await ctx.reply('or something like this...')
+            await ctx.reply('.alert price BTC above 24')
+            return
+        }
+        let coinId = tokens[2]
+        let alertType = tokens[1]
+        let direction = tokens[3]
+        let value = Number(tokens[4])
+
+        if (!(availableCoins.has(coinId))) {
+            await ctx.reply(`Coin ${coinId} is either not valid or `)
+        }
+        let newAlert = new Alert({
+            alertType: alertType,
+            value: value,
+            direction: direction,
+            userId: chatId,
+            coinId: coinId
+        })
+
+        await ctx.reply(`Successfully added alert for coin ${coinId} for a strike price of ${direction} ${value}`)
     }
     
 })
