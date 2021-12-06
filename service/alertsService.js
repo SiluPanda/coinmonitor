@@ -66,6 +66,7 @@ export async function sendVolatilityAlerts() {
             let detection = await detectAbnormnalVolatility(history)
             let shouldAlert = detection[2]
             if (shouldAlert) {
+                console.log(coinId)
                 let targetUsers = await User.find({ watchlist: coinId, volatilityAlert: true }).exec()
                 let message = 
                 `
@@ -124,6 +125,7 @@ export async function detectAbnormnalVolatility(history, thereshold=3) {
         let averageChange = totalChange / sampleSize
         let latestChange = (Math.abs(history[size - 1].rate - history[size - 2].rate) / history[size - 2].rate) * 100
 
+        console.log(latestChange, averageChange)
         if (latestChange > thereshold * averageChange) {
             return [averageChange, latestChange, true]
         }
