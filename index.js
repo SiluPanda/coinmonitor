@@ -83,21 +83,21 @@ bot.command('help', async (ctx) => {
     
     Setup & starting up
 
-    => /start Welcome command, sets up user and prints welcome message
+    /start Welcome command, sets up user and prints welcome message
 
     Manage Watchlist
 
-    => /watchlist : Print the details of coins in your watch list
-    => /add : Adds a coin in your watchlist, example: /add BTC
-    => /remove : Removes a coin from your watchlist, /remove BTC
+    /watchlist : Print the details of coins in your watch list
+    /add : Adds a coin in your watchlist, example: /add BTC
+    /remove : Removes a coin from your watchlist, /remove BTC
 
     See Supported coins
 
-    => /all : Prints all the monitorable coins 
+    /all : Prints all the monitorable coins 
 
     Alerts
 
-    => /alert volatility : Adds an alert for extreme volatility`
+    /alert volatility : Adds an alert for extreme volatility`
 
     await ctx.reply(helpMessage)
 })
@@ -239,13 +239,13 @@ bot.command('alert', async (ctx) => {
             await ctx.reply('.alert price BTC above 24')
             return
         }
-        let coinId = tokens[2]
+        let coinId = tokens[2].toUpperCase()
         let alertType = tokens[1]
         let direction = tokens[3]
         let value = Number(tokens[4])
 
         if (!(availableCoins.has(coinId))) {
-            await ctx.reply(`Coin ${coinId} is either not valid or `)
+            await ctx.reply(`Coin ${coinId} is either not valid or not supported yet`)
         }
         let newAlert = new Alert({
             alertType: alertType,
@@ -254,6 +254,8 @@ bot.command('alert', async (ctx) => {
             userId: chatId,
             coinId: coinId
         })
+
+        await newAlert.save()
 
         await ctx.reply(`Successfully added alert for coin ${coinId} for a strike price of ${direction} ${value}`)
     }
