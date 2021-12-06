@@ -66,17 +66,21 @@ bot.command('help', async (ctx) => {
     
     let helpMessage = `The bot can do following things
     Setup & starting up
+
     => /start Welcome command, sets up user and prints welcome message
 
     Manage Watchlist
+
     => /watchlist : Print the details of coins in your watch list
     => /add : Adds a coin in your watchlist, example: /add BTC
     => /remove : Removes a coin from your watchlist, /remove BTC
 
     See Supported coins
+
     => /all : Prints all the monitorable coins 
 
     Alerts
+
     => /alert volatility : Adds an alert for extreme volatility`
 
     await ctx.reply(helpMessage)
@@ -108,8 +112,7 @@ bot.command('watchlist', async (ctx) => {
 
         let sym = c.symbol || ''
 
-        let message = `
-        ${sym} ${c.name}
+        let message = `${sym} ${c.name}
         Code: ${c.code}
         Price: ${c.rate}
         Volume: ${c.volume}
