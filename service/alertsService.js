@@ -60,7 +60,7 @@ export async function sendVolatilityAlerts() {
 
         let history = priceHistory[coinId].history
         
-        let detection = detectAbnormnalVolatility(history)
+        let detection = await detectAbnormnalVolatility(history)
         let shouldAlert = detection[2]
 
         if (shouldAlert) {
@@ -137,6 +137,7 @@ cron.schedule('0 */30 * * * *', async () => {
     await getPriceHistory()
     await sendVolatilityAlerts()
 })
+
 
 
 

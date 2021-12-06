@@ -24,6 +24,12 @@ await mongoose.connect(process.env.MONGO_URI, dbConnnectionOptions)
     process.exit(1)
 })
 
+
+let users = await User.find({ userId: "596645073", watchlist: 'BTC' }).exec()
+for (let user of users) {
+    console.log(user)
+}
+
 // setup scripts
 await fetchCoinsDetails()
 await initializeBot()
