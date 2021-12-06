@@ -10,7 +10,7 @@ let userSchema = mongoose.Schema(
             type: Array,
             required: true
         },
-        volatilityAltert: {
+        volatilityAlert: {
             type: Boolean,
             required: true,
             default: false

@@ -17,7 +17,7 @@ export let priceHistory = {}
  */
 
 export async function getPriceHistory() {
-    
+    console.log("fetching coin history...")
     try {
         let requestPromises = []
 
@@ -56,35 +56,39 @@ export async function getPriceHistory() {
  * all the subscribed used who has the coin in their watch list
  */
 export async function sendVolatilityAlerts() {
-    for (let coinId in priceHistory) {
+    console.log("starting volatility alert service...")
 
-        let history = priceHistory[coinId].history
-        
-        let detection = await detectAbnormnalVolatility(history)
-        let shouldAlert = detection[2]
+    try {
+        for (let coinId in priceHistory) {
 
-        if (shouldAlert) {
-            let targetUsers = await User.find({ watchlist: coinId, volatilityAltert: true }).exec()
-            let message = 
-            `
-            ${emoji.get('fire')} Extreme volatility alert
-            Name: ${coinsDetails[coinId].name}
-            Code: ${coinsDetails[coinId].code}
-            Price: ${coinsDetails[coinId].rate}
-            Volume: ${coinsDetails[coinId].volume}
-            Average absolute change in 24h of 15 min windows: ${detection[0]}
-            Latest change: ${detection[1]}
-            `
+            let history = priceHistory[coinId].history
+            
+            let detection = await detectAbnormnalVolatility(history)
+            let shouldAlert = detection[2]
+            if (shouldAlert) {
+                let targetUsers = await User.find({ watchlist: coinId, volatilityAlert: true }).exec()
+                let message = 
+                `
+                ${emoji.get('fire')} Extreme volatility alert
+                Name: ${coinsDetails[coinId].name}
+                Code: ${coinsDetails[coinId].code}
+                Price: ${coinsDetails[coinId].rate}
+                Volume: ${coinsDetails[coinId].volume}
+                Average absolute change in 24h of 15 min windows: ${detection[0]}
+                Latest change: ${detection[1]}
+                `
 
+                let sendMessagePromises = []
+                for (let user of targetUsers) {
+                    sendMessagePromises.push(bot.api.sendMessage(user.userId, message))
+                }
 
-            let sendMessagePromises = []
-            for (let user of targetUsers) {
-                sendMessagePromises.push(bot.api.sendMessage(chatId, message))
+                await Promise.all(sendMessagePromises)
             }
-
-            await Promise.all(sendMessagePromises)
+            
         }
-        
+    } catch (err) {
+        console.log(`error while sending volatility alerts, reason: ${err}`)
     }
 }
 
@@ -124,11 +128,11 @@ export async function detectAbnormnalVolatility(history, thereshold=3) {
             return [averageChange, latestChange, true]
         }
         else {
-            return [null, null, true]
+            return [averageChange, latestChange, false]
         }
     } catch (err) {
         console.log(`error while computing volatility anomaly, reason: ${err}`)
-        return [null, null, true]
+        throw new Error(err)
     }
 
 }   

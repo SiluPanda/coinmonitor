@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 import User from './model/user.js'
 import mongoose from 'mongoose'
 import { fetchCoinsDetails, coinsDetails, availableCoins } from './service/marketDataService.js'
-import { priceHistory, getPriceHistory } from './service/alertsService.js'
+import { priceHistory, getPriceHistory, sendVolatilityAlerts } from './service/alertsService.js'
 import { bot, initializeBot } from './config/bot.js'
 
 dotenv.config()
@@ -24,16 +24,11 @@ await mongoose.connect(process.env.MONGO_URI, dbConnnectionOptions)
     process.exit(1)
 })
 
-
-let users = await User.find({ userId: "596645073", watchlist: 'BTC' }).exec()
-for (let user of users) {
-    console.log(user)
-}
-
 // setup scripts
 await fetchCoinsDetails()
 await initializeBot()
 await getPriceHistory()
+await sendVolatilityAlerts()
 
 
 /**
