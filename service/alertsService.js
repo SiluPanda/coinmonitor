@@ -108,12 +108,12 @@ export async function sendPriceAlerts() {
     try {
         for (let coinId in coinsDetails) {
             // get alert subscriptions of type below and price above than current price
-            let subs = await Alert.find({ coinId: coinId, alertType: 'below', value: { $gte: coinsDetails[coinId].rate }}).exec()
+            let subs = await Alert.find({ coinId: coinId, alertType: 'price', direction: 'below', value: { $gte: coinsDetails[coinId].rate }}).exec()
             let messagePromises = []
             
 
             for (let sub of subs) {
-                let message = `${emoji.get('relieved')} Price alert trigered
+                let message = `${emoji.get('relieved')} Price alert triggered
                 Name: ${coinsDetails[coinId].name}
                 Code: ${coinId},
                 Price: ${coinsDetails[coinId].rate}
@@ -126,14 +126,15 @@ export async function sendPriceAlerts() {
 
             await Promise.all(messagePromises)
 
-            await Alert.deleteMany({ coinId: coinId, alertType: 'below', value: { $gte: coinsDetails[coinId].rate }})
+            await Alert.deleteMany({ coinId: coinId, alertType: 'price', direction: 'below', value: { $gte: coinsDetails[coinId].rate }})
 
             // get alert for the above directional alerts
-            subs = await Alert.find({ coinId: coinId, alertType: 'above', value: { $lte: coinsDetails[coinId].rate }}).exec()
+            subs = await Alert.find({ coinId: coinId, alertType: 'price', direction: 'above', value: { $lte: coinsDetails[coinId].rate }}).exec()
+            console.log(subs)
             messagePromises = []
 
             for (let sub of subs) {
-                let message = `${emoji.get('relieved')} Price alert trigered
+                let message = `${emoji.get('relieved')} Price alert triggered
                 Name: ${coinsDetails[coinId].name}
                 Code: ${coinId},
                 Price: ${coinsDetails[coinId].rate}
@@ -146,7 +147,7 @@ export async function sendPriceAlerts() {
 
             await Promise.all(messagePromises)
 
-            await Alert.deleteMany({ coinId: coinId, alertType: 'above', value: { $lte: coinsDetails[coinId].rate }})
+            await Alert.deleteMany({ coinId: coinId, alertType: 'price', direction: 'above', value: { $lte: coinsDetails[coinId].rate }})
         }
     } catch (err) {
         console.log(`error while sending price alerts, reason: ${err}`)
