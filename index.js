@@ -83,21 +83,26 @@ bot.command('help', async (ctx) => {
     
     Setup & starting up
 
-    /start Welcome command, sets up user and prints welcome message
+    1. /start Welcome command, sets up user and prints welcome message
 
     Manage Watchlist
 
-    /watchlist : Print the details of coins in your watch list
-    /add : Adds a coin in your watchlist, example: /add BTC
-    /remove : Removes a coin from your watchlist, /remove BTC
+    1. /watchlist : Print the details of coins in your watch list
+    2. /add : Adds a coin in your watchlist, example: /add BTC
+    3. /remove : Removes a coin from your watchlist, /remove BTC
 
     See Supported coins
 
-    /all : Prints all the monitorable coins 
+    1. /all : Prints all the monitorable coins 
 
     Alerts
 
-    /alert volatility : Adds an alert for extreme volatility`
+    1. /alert volatility : Adds an alert for extreme volatility
+    2. /alert price <coin symbol> below <strike price> : Adds an alert for coin symbol when price goes below strike price, 
+    example: /alert price BTC below 60000
+    3. /alert price <coin symbol> above <strike price> : Adds an alert for coin symbol when price goes above strike price
+    example: /alert proice BTC above 5000 
+    `
 
     await ctx.reply(helpMessage)
 })
@@ -213,7 +218,7 @@ bot.command('all', async (ctx) => {
  */
 
 bot.command('alert', async (ctx) => {
-    let supportedAlertTypes = ['volatility']
+    let supportedAlertTypes = ['volatility', 'price']
 
     let chatId = ctx.msg.chat.id
     let message = ctx.msg.text
@@ -231,12 +236,12 @@ bot.command('alert', async (ctx) => {
         await ctx.reply('Added alert for extreme volatility signals for your watchlist')
     }
 
-    if (type.toLowerCase() == 'price') {
+    else if (type.toLowerCase() == 'price') {
         if (tokens.length < 5 || isNaN(tokens[4])) {
-            await ctx.reply('Coin and/or direction and/or strike price missing, a valid alert command would be something like this:')
+            await ctx.reply('Coin and/or direction and/or strike price missing or malformed, a valid alert command would be something like this:')
             await ctx.reply('/alert price BTC below 44')
             await ctx.reply('or something like this...')
-            await ctx.reply('.alert price BTC above 24')
+            await ctx.reply('/alert price BTC above 24')
             return
         }
         let coinId = tokens[2].toUpperCase()
@@ -258,6 +263,9 @@ bot.command('alert', async (ctx) => {
         await newAlert.save()
 
         await ctx.reply(`Successfully added alert for coin ${coinId} for a strike price of ${direction} ${value}`)
+    }
+    else {
+        await ctx.reply(`Alert of type '${type} not supported yet, supproted types are ${supportedAlertTypes}`)
     }
     
 })

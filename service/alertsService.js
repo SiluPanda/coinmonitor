@@ -130,7 +130,6 @@ export async function sendPriceAlerts() {
 
             // get alert for the above directional alerts
             subs = await Alert.find({ coinId: coinId, alertType: 'price', direction: 'above', value: { $lte: coinsDetails[coinId].rate }}).exec()
-            console.log(subs)
             messagePromises = []
 
             for (let sub of subs) {
