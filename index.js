@@ -21,6 +21,11 @@ import {
     initializeBot 
 } from './config/bot.js'
 
+// import {
+//     fetchTweets,
+//     crytoTweets
+// } from './service/twitterService.js'
+
 dotenv.config()
 
 const dbConnnectionOptions = {
@@ -43,7 +48,7 @@ await mongoose.connect(process.env.MONGO_URI, dbConnnectionOptions)
 await fetchCoinsDetails()
 await initializeBot()
 await getPriceHistory()
-await sendPriceAlerts()
+
 
 
 /**
@@ -82,26 +87,36 @@ bot.command('help', async (ctx) => {
     let helpMessage = `The bot can do following things
     
     Setup & starting up
+    ==========================
 
     1. /start Welcome command, sets up user and prints welcome message
 
     Manage Watchlist
+    ==========================
 
     1. /watchlist : Print the details of coins in your watch list
     2. /add : Adds a coin in your watchlist, example: /add BTC
     3. /remove : Removes a coin from your watchlist, /remove BTC
 
     See Supported coins
+    ==========================
 
     1. /all : Prints all the monitorable coins 
 
     Alerts
+    ==========================
 
     1. /alert volatility : Adds an alert for extreme volatility
     2. /alert price <coin symbol> below <strike price> : Adds an alert for coin symbol when price goes below strike price, 
     example: /alert price BTC below 60000
     3. /alert price <coin symbol> above <strike price> : Adds an alert for coin symbol when price goes above strike price
-    example: /alert proice BTC above 5000 
+    example: /alert price BTC above 5000 
+
+    Tweets
+    ==========================
+
+    1. /tweet on : Subscribe to daily twitter data from various sources
+    2. /tweet off : Unsubscribe to daily twitter data
     `
 
     await ctx.reply(helpMessage)
@@ -268,6 +283,36 @@ bot.command('alert', async (ctx) => {
         await ctx.reply(`Alert of type '${type} not supported yet, supproted types are ${supportedAlertTypes}`)
     }
     
+})
+
+
+bot.command('tweet', async (ctx) => {
+    let message = ctx.msg.text
+    let chatId = ctx.msg.chat.id
+
+    let tokens = message.split(' ')
+    if (tokens.length < 2) {
+        await ctx.reply(`No action provided, available actions are [on, off], example, /tweet on`)
+        return
+    }
+
+    if (tokens[1] != 'on' && tokens[1] != 'off') {
+        await ctx.reply(`Action is not valie, available actions are [on, off], example, /tweet on`)
+        return
+    }
+
+    if (tokens[1] == 'on') {
+        await User.updateOne({ userId: chatId }, { tweet: true })
+        await ctx.reply(`Successfuly subscribed to daily tweet updates`)
+        return
+    }
+
+    if (tokens[1] != 'off') {
+        await User.updateOne({ userId: chatId }, { tweet: false })
+        await ctx.reply('Successfully unsubscribed to daily tweets')
+        return
+    }
+
 })
 
 

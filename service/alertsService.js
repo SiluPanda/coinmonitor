@@ -37,8 +37,8 @@ export async function sendVolatilityAlerts() {
                 Code: ${coinsDetails[coinId].code}
                 Price: ${coinsDetails[coinId].rate}
                 Volume: ${coinsDetails[coinId].volume}
-                Average absolute change in 24h of 15 min windows: ${detection[0]}
-                Latest change: ${detection[1]}
+                Average absolute change percentage in 24h of 30 minutes windows: ${detection[0]}
+                Change percentage in last 30 minutes: ${detection[1]}
                 `
 
                 let sendMessagePromises = []
@@ -78,15 +78,17 @@ export async function detectAbnormnalVolatility(history, thereshold=3) {
 
         let totalChange = 0
         let sampleSize = 0
-        for (let i = 1; i < size - 1; i++) {
-            if (history[i].rate != undefined && history[i-1] != undefined) {
-                totalChange += (Math.abs(history[i].rate - history[i-1].rate) / history[i-1].rate) * 100
+        for (let i = 2; i < size - 2; i++) {
+            if (history[i].rate != undefined && history[i-2] != undefined) {
+                totalChange += (Math.abs(history[i].rate - history[i-2].rate) / history[i-2].rate) * 100
                 sampleSize += 1
             }
         }
         let averageChange = totalChange / sampleSize
-        let latestChange = (Math.abs(history[size - 1].rate - history[size - 2].rate) / history[size - 2].rate) * 100
+        let latestChange = (Math.abs(history[size - 1].rate - history[size - 3].rate) / history[size - 3].rate) * 100
 
+        averageChange = averageChange.toFixed(2)
+        latestChange = latestChange.toFixed(2)
         if (latestChange > thereshold * averageChange) {
             return [averageChange, latestChange, true]
         }
@@ -156,6 +158,9 @@ export async function sendPriceAlerts() {
 cron.schedule('0 */30 * * * *', async () => {
     await getPriceHistory()
     await sendVolatilityAlerts()
+})
+
+cron.schedule('0 */2 * * * *', async () => {
     await sendPriceAlerts()
 })
 
