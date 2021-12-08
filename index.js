@@ -21,10 +21,10 @@ import {
     initializeBot 
 } from './config/bot.js'
 
-// import {
-//     fetchTweets,
-//     crytoTweets
-// } from './service/twitterService.js'
+import {
+    fetchTweets,
+    sendTwitterData
+} from './service/twitterService.js'
 
 dotenv.config()
 
@@ -48,6 +48,8 @@ await mongoose.connect(process.env.MONGO_URI, dbConnnectionOptions)
 await fetchCoinsDetails()
 await initializeBot()
 await getPriceHistory()
+await fetchTweets()
+await sendTwitterData()
 
 
 
@@ -301,13 +303,15 @@ bot.command('tweet', async (ctx) => {
         return
     }
 
+
     if (tokens[1] == 'on') {
-        await User.updateOne({ userId: chatId }, { tweet: true })
+        
+        await User.updateOne({ userId: chatId }, { tweet: true }, {multi: true})
         await ctx.reply(`Successfuly subscribed to daily tweet updates`)
         return
     }
 
-    if (tokens[1] != 'off') {
+    if (tokens[1] == 'off') {
         await User.updateOne({ userId: chatId }, { tweet: false })
         await ctx.reply('Successfully unsubscribed to daily tweets')
         return

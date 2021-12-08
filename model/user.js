@@ -14,6 +14,11 @@ let userSchema = mongoose.Schema(
             type: Boolean,
             required: true,
             default: false
+        },
+        tweet: {
+            type: Boolean,
+            required: true,
+            default: false
         }
     },
     {
