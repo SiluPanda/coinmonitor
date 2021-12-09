@@ -48,8 +48,6 @@ await mongoose.connect(process.env.MONGO_URI, dbConnnectionOptions)
 await fetchCoinsDetails()
 await initializeBot()
 await getPriceHistory()
-await fetchTweets()
-await sendTwitterData()
 
 
 
