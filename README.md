@@ -8,7 +8,7 @@ track the market.
 
 ## Features
 - Manage watchlist of a collection of coins, add and remove from available coins
-- Set alert for abonromal sprikes and crashes of price (extreme volatility)
+- Set alert for abnoromal sprikes and crashes (extreme volatility)
 - Set alert of price movements (eg: below 4000, above 6000 etc)
 - Subscribe for crypto news from various twitter sources
 
